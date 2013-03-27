@@ -22,12 +22,14 @@ import org.codehaus.plexus.util.cli.Commandline;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.artifact.AttachedArtifact;
 
 /**
  * Goal which generates an IKVM dll containing all the jars on the classpath.
@@ -132,7 +134,10 @@ public class IkvmMavenMojo extends AbstractMojo
 
         // configure our artifact file
         File artifactFile = new File(projectDir, _project.getBuild().getFinalName() + ".dll");
-        _project.getArtifact().setFile(artifactFile);
+        //_project.getArtifact().setFile(artifactFile);
+        AttachedArtifact aa = new AttachedArtifact(_project.getArtifact(), "dll", new DefaultArtifactHandler());
+        aa.setFile(artifactFile);
+        _project.addAttachedArtifact(aa);
 
         if (ikvmPath == null) {
             // if requested, create a zero size artifact file
@@ -179,6 +184,7 @@ public class IkvmMavenMojo extends AbstractMojo
                     javaDepends.add(artifact.getFile());
                 }
             }
+            javaDepends.add(_project.getArtifact().getFile());
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to resolve dependencies.", e);
         }
